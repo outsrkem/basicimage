@@ -1,0 +1,28 @@
+# Step 1
+FROM alpine:3.19.1
+ARG GO_VERSION="go1.22.0"
+ARG UPX_VERSION="4.2.3"
+WORKDIR /opt/workspace
+
+RUN apk add --no-cache --virtual .build-depsgcc libc-dev g++ make git
+RUN wget https://dl.google.com/go/${GO_VERSION}.linux-amd64.tar.gz
+RUN tar xf ${GO_VERSION}.linux-amd64.tar.gz -C /usr/local
+ENV PATH=$PATH:/usr/local/go/bin
+
+# Install upx
+RUN wget https://github.com/upx/upx/releases/download/v${UPX_VERSION}/upx-${UPX_VERSION}-amd64_linux.tar.xz
+RUN tar xf upx-${UPX_VERSION}-amd64_linux.tar.xz
+RUN mv upx-*/upx /usr/local/bin
+ENV PATH=$PATH:/usr/local/upx-${UPX_VERSION}-amd64_linux
+RUN upx -h
+
+# Step 2
+FROM alpine:3.19.1
+# 安装软件
+RUN apk update && apk add --no-cache --virtual .build-depsgcc libc-dev g++ make git tzdata
+# tzdata 下载安装包
+RUN cd /root && apk fetch tzdata  libc-dev g++ make git tzdata
+
+COPY --from=0 /usr/local /usr/local
+ENV PATH=$PATH:/usr/local/go/bin \
+    GOROOT=/usr/local/go
