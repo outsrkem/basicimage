@@ -1,0 +1,9 @@
+# Step 1
+FROM rockylinux:8
+
+RUN dnf install -y rpm-build
+RUN dnf clean all && rm -rf /var/cache/dnf
+
+RUN mkdir -p /root/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+
+WORKDIR /root/rpmbuild
